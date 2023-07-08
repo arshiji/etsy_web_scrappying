@@ -1,1 +1,1 @@
-# etsy_web_scrappying
+# etsy_web_scraping
