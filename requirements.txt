@@ -1,3 +1,6 @@
 flask
 flask-login
 flask-sqlalchemy
+bs4
+requests
+pandas

@@ -1,82 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from IPython.display import display, HTML
-from bs4 import BeautifulSoup
-import requests
-import pandas as pd
-import re
-from flask import Flask, render_template, jsonify
+# from bs4 import BeautifulSoup
+# import requests
+# import pandas as pd
+# import re
+# from flask import Flask, render_template, jsonify
+from website import create_app
 
-app = Flask(__name__)
+app = create_app()
 
-# etsy_449_results
-def scrape_etsy():
-    base_url = "https://www.etsy.com/ca/search?q=canada+tshirt&ref=search_bar"
-    product_list = []
-    
-    page = 1
-    while True:
-        url = base_url + f"&page={page}"
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Find product elements on the page
-        products = soup.find_all("div", class_="v2-listing-card__info")
-        
-        if not products:
-            break
-        try:
-            for product in products:
-                # Extract relevant information
-                title = product.find("h3", class_="wt-text-caption v2-listing-card__title wt-text-truncate").text.strip()
-                price = product.find("span", class_="currency-value").text.strip()
-                currency = product.find("span", class_="currency-symbol").text.strip()
-                #delivery = product.find("span", class_="wt-badge wt-badge--small wt-badge--sale-01").text.strip()#
-                delivery = product.find("div", class_="streamline-spacing-shop-rating").text.strip() if product.find("div", class_="streamline-spacing-shop-rating") else product.find("span", class_="wt-badge wt-badge--small wt-badge--sale-01").text.strip()  
-                sales_count = product.find("p", class_="wt-text-title-01 lc-price").text.strip()
-                org_prc = product.find("p", class_="wt-text-title-01 lc-price").text.strip()
-
-                if len(org_prc) > 12:
-                    sales_count = product.find("p", class_="wt-text-caption search-collage-promotion-price wt-text-slime wt-text-truncate wt-no-wrap")
-                    if sales_count:
-                        org_prc = sales_count.find("span", class_="currency-value").text.strip()
-
-                product_data = {
-                    "Title": title,
-                    "Currency": currency,
-                    "Price": price,
-                    "Delivery": delivery,
-                    "sales_price": org_prc
-                }
-
-                product_list.append(product_data)
-        except:
-            pass
-        page += 1
-    
-    return product_list
-
-# Call the function to scrape Etsy
-etsy_products = scrape_etsy()
-
-# Convert the list of products to a DataFrame
-etsy_results = pd.DataFrame(etsy_products)
-
-# Display the DataFrame
-#etsy_results.to_csv("etsy_results.csv")
-#etsy_results.count()
-
-
-@app.route("/")
-def hello_jovian():
-    return render_template('home.html', 
-                           jobs=etsy_results, 
-                           company_name='Arshia Khosla')
-
-@app.route("/api/jobs")
-def list_jobs():
-  return jsonify(etsy_results)
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', debug=True)
+    # debug reruns the webserver changes everytime you change/add to your code.
+    # not needed in production
+    app.run(debug=True, port=5000)
